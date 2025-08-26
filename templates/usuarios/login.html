@@ -1,0 +1,238 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load crispy_forms_tags %}
+
+{% block title %}Login - JT Sistemas{% endblock %}
+
+{% block extra_css %}
+<style>
+    .login-layout {
+        min-height: 100vh;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 2rem 1rem;
+    }
+    
+    .login-card {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(10px);
+        border-radius: 20px;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        padding: 3rem;
+        width: 100%;
+        max-width: 420px;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+    
+    .login-logo {
+        text-align: center;
+        margin-bottom: 2rem;
+    }
+    
+    .login-logo i {
+        font-size: 3rem;
+        color: var(--primary-color);
+        margin-bottom: 1rem;
+    }
+    
+    .login-logo h1 {
+        font-size: 1.8rem;
+        font-weight: 700;
+        color: var(--gray-800);
+        margin: 0;
+    }
+    
+    .login-logo p {
+        color: var(--gray-600);
+        margin: 0.5rem 0 0 0;
+        font-size: 0.95rem;
+    }
+    
+    .form-control:focus {
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 0.25rem rgba(37, 99, 235, 0.1);
+    }
+    
+    .btn-primary {
+        background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
+        border: none;
+        padding: 0.75rem 2rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        border-radius: 10px;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 20px rgba(37, 99, 235, 0.3);
+    }
+    
+    .login-footer {
+        text-align: center;
+        margin-top: 2rem;
+        padding-top: 2rem;
+        border-top: 1px solid var(--gray-200);
+    }
+    
+    .login-footer p {
+        color: var(--gray-600);
+        font-size: 0.9rem;
+        margin: 0;
+    }
+    
+    .form-floating {
+        margin-bottom: 1.5rem;
+    }
+    
+    .form-floating > .form-control {
+        height: 58px;
+        border-radius: 10px;
+        border: 2px solid var(--gray-200);
+        transition: all 0.3s ease;
+    }
+    
+    .form-floating > label {
+        color: var(--gray-500);
+    }
+    
+    .form-check {
+        margin-bottom: 1.5rem;
+    }
+    
+    .form-check-input:checked {
+        background-color: var(--primary-color);
+        border-color: var(--primary-color);
+    }
+    
+    .alert {
+        border-radius: 10px;
+        border: none;
+        margin-bottom: 1.5rem;
+    }
+    
+    @media (max-width: 576px) {
+        .login-card {
+            padding: 2rem 1.5rem;
+            margin: 1rem;
+        }
+        
+        .login-logo h1 {
+            font-size: 1.5rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block login_content %}
+<div class="login-card">
+    <div class="login-logo">
+        <i class="fas fa-cogs"></i>
+        <h1>JT Sistemas</h1>
+        <p>Sistema de Gestão Empresarial</p>
+    </div>
+    
+    {% if form.non_field_errors %}
+        <div class="alert alert-danger">
+            <i class="fas fa-exclamation-circle me-2"></i>
+            {{ form.non_field_errors.0 }}
+        </div>
+    {% endif %}
+    
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }}">
+                <i class="fas fa-{% if message.tags == 'error' %}exclamation-circle{% elif message.tags == 'warning' %}exclamation-triangle{% elif message.tags == 'success' %}check-circle{% else %}info-circle{% endif %} me-2"></i>
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endif %}
+    
+    <form method="post" class="needs-validation" novalidate>
+        {% csrf_token %}
+        
+        <div class="form-floating">
+            {{ form.username }}
+            <label for="{{ form.username.id_for_label }}">Nome de usuário</label>
+            {% if form.username.errors %}
+                <div class="invalid-feedback d-block">
+                    {{ form.username.errors.0 }}
+                </div>
+            {% endif %}
+        </div>
+        
+        <div class="form-floating">
+            {{ form.password }}
+            <label for="{{ form.password.id_for_label }}">Senha</label>
+            {% if form.password.errors %}
+                <div class="invalid-feedback d-block">
+                    {{ form.password.errors.0 }}
+                </div>
+            {% endif %}
+        </div>
+        
+        <div class="form-check">
+            {{ form.remember_me }}
+            <label class="form-check-label" for="{{ form.remember_me.id_for_label }}">
+                Lembrar de mim
+            </label>
+        </div>
+        
+        <div class="d-grid">
+            <button type="submit" class="btn btn-primary btn-lg">
+                <i class="fas fa-sign-in-alt me-2"></i>
+                Entrar
+            </button>
+        </div>
+    </form>
+    
+    <div class="login-footer">
+        <p>&copy; 2024 JT Sistemas. Todos os direitos reservados.</p>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Form validation
+    (function() {
+        'use strict';
+        
+        const form = document.querySelector('.needs-validation');
+        
+        form.addEventListener('submit', function(event) {
+            if (!form.checkValidity()) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
+            
+            form.classList.add('was-validated');
+        }, false);
+        
+        // Focus on username field
+        document.getElementById('{{ form.username.id_for_label }}').focus();
+        
+        // Add floating label animation
+        const inputs = document.querySelectorAll('.form-floating input');
+        inputs.forEach(input => {
+            input.addEventListener('focus', function() {
+                this.parentElement.classList.add('focused');
+            });
+            
+            input.addEventListener('blur', function() {
+                if (!this.value) {
+                    this.parentElement.classList.remove('focused');
+                }
+            });
+            
+            // Check if input has value on page load
+            if (input.value) {
+                input.parentElement.classList.add('focused');
+            }
+        });
+    })();
+</script>
+{% endblock %}

@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-bs-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="JT Sistemas - Sistema de Gestão Empresarial">
+    <meta name="author" content="JT Sistemas">
+    
+    <title>{% block title %}JT Sistemas{% endblock %}</title>
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="{% load static %}{% static 'images/favicon.ico' %}">
+    
+    <!-- Bootstrap 5.3 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Font Awesome 6.4.0 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Inter Font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{% load static %}{% static 'css/main.css' %}">
+    <link rel="stylesheet" href="{% load static %}{% static 'css/sidebar.css' %}">
+    <link rel="stylesheet" href="{% load static %}{% static 'css/components.css' %}">
+    
+    {% block extra_css %}{% endblock %}
+    
+    <!-- Custom CSS Variables -->
+    <style>
+        :root {
+            /* Primary Colors */
+            --primary-color: #2563eb;
+            --primary-dark: #1d4ed8;
+            --primary-light: #3b82f6;
+            
+            /* Functional Colors */
+            --success-color: #059669;
+            --success-light: #10b981;
+            --danger-color: #dc2626;
+            --danger-light: #ef4444;
+            --warning-color: #d97706;
+            --info-color: #0891b2;
+            
+            /* Neutral Tones */
+            --gray-50: #f8fafc;
+            --gray-100: #f1f5f9;
+            --gray-200: #e2e8f0;
+            --gray-300: #cbd5e1;
+            --gray-400: #94a3b8;
+            --gray-500: #64748b;
+            --gray-600: #475569;
+            --gray-700: #334155;
+            --gray-800: #1e293b;
+            --gray-900: #0f172a;
+            
+            /* Sidebar */
+            --sidebar-width-collapsed: 70px;
+            --sidebar-width-expanded: 280px;
+            --sidebar-transition: all 0.3s ease;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, var(--gray-50) 0%, var(--gray-100) 100%);
+            min-height: 100vh;
+        }
+    </style>
+</head>
+<body>
+    {% if user.is_authenticated %}
+        <!-- Sidebar -->
+        <div class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-logo">
+                    <i class="fas fa-cogs sidebar-icon"></i>
+                    <span class="nav-text">JT Sistemas</span>
+                </div>
+            </div>
+            
+            <nav class="sidebar-nav">
+                <ul class="nav flex-column">
+                    <!-- Dashboard -->
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.resolver_match.namespace == 'dashboard' %}active{% endif %}" 
+                           href="{% url 'dashboard:home' %}">
+                            <i class="fas fa-tachometer-alt nav-icon"></i>
+                            <span class="nav-text">Dashboard</span>
+                        </a>
+                    </li>
+                    
+                    <!-- Calendar -->
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'dashboard:calendar' %}">
+                            <i class="fas fa-calendar-alt nav-icon"></i>
+                            <span class="nav-text">Calendário</span>
+                        </a>
+                    </li>
+                    
+                    <!-- Agendamentos -->
+                    {% if user.pode_ver_agendamentos or user.is_master %}
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle {% if request.resolver_match.namespace == 'agendamentos' %}active{% endif %}" 
+                           href="#" data-bs-toggle="collapse" data-bs-target="#agendamentosMenu">
+                            <i class="fas fa-calendar-check nav-icon"></i>
+                            <span class="nav-text">Agendamentos</span>
+                            <i class="fas fa-chevron-down dropdown-icon"></i>
+                        </a>
+                        <div class="collapse" id="agendamentosMenu">
+                            <ul class="nav flex-column ms-3">
+                                <li class="nav-item">
+                                    <a class="nav-link" href="{% url 'agendamentos:list' %}">
+                                        <i class="fas fa-list nav-icon"></i>
+                                        <span class="nav-text">Listar</span>
+                                    </a>
+                                </li>
+                                {% if user.pode_agendar or user.is_master %}
+                                <li class="nav-item">
+                                    <a class="nav-link" href="{% url 'agendamentos:create' %}">
+                                        <i class="fas fa-plus nav-icon"></i>
+                                        <span class="nav-text">Novo Agendamento</span>
+                                    </a>
+                                </li>
+                                {% endif %}
+                            </ul>
+                        </div>
+                    </li>
+                    {% endif %}
+                    
+                    <!-- Clientes -->
+                    {% if user.pode_cadastrar_cliente or user.is_master %}
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle {% if request.resolver_match.namespace == 'clientes' %}active{% endif %}" 
+                           href="#" data-bs-toggle="collapse" data-bs-target="#clientesMenu">
+                            <i class="fas fa-users nav-icon"></i>
+                            <span class="nav-text">Clientes</span>
+                            <i class="fas fa-chevron-down dropdown-icon"></i>
+                        </a>
+                        <div class="collapse" id="clientesMenu">
+                            <ul class="nav flex-column ms-3">
+                                <li class="nav-item">
+                                    <a class="nav-link" href="{% url 'clientes:list' %}">
+                                        <i class="fas fa-list nav-icon"></i>
+                                        <span class="nav-text">Listar</span>
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" href="{% url 'clientes:create' %}">
+                                        <i class="fas fa-user-plus nav-icon"></i>
+                                        <span class="nav-text">Novo Cliente</span>
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                    </li>
+                    {% endif %}
+                    
+                    <!-- Funcionários -->
+                    {% if user.pode_cadastrar_funcionario or user.is_master %}
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle {% if request.resolver_match.namespace == 'funcionarios' %}active{% endif %}" 
+                           href="#" data-bs-toggle="collapse" data-bs-target="#funcionariosMenu">
+                            <i class="fas fa-user-tie nav-icon"></i>
+                            <span class="nav-text">Funcionários</span>
+                            <i class="fas fa-chevron-down dropdown-icon"></i>
+                        </a>
+                        <div class="collapse" id="funcionariosMenu">
+                            <ul class="nav flex-column ms-3">
+                                <li class="nav-item">
+                                    <a class="nav-link" href="{% url 'funcionarios:list' %}">
+                                        <i class="fas fa-list nav-icon"></i>
+                                        <span class="nav-text">Listar</span>
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" href="{% url 'funcionarios:create' %}">
+                                        <i class="fas fa-user-plus nav-icon"></i>
+                                        <span class="nav-text">Novo Funcionário</span>
+                                    </a>
+                                </li>
+                                {% if user.pode_cadastrar_cargo or user.is_master %}
+                                <li class="nav-item">
+                                    <a class="nav-link" href="{% url 'funcionarios:cargos' %}">
+                                        <i class="fas fa-briefcase nav-icon"></i>
+                                        <span class="nav-text">Cargos</span>
+                                    </a>
+                                </li>
+                                {% endif %}
+                            </ul>
+                        </div>
+                    </li>
+                    {% endif %}
+                    
+                    <!-- Serviços -->
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle {% if request.resolver_match.namespace == 'servicos' %}active{% endif %}" 
+                           href="#" data-bs-toggle="collapse" data-bs-target="#servicosMenu">
+                            <i class="fas fa-concierge-bell nav-icon"></i>
+                            <span class="nav-text">Serviços</span>
+                            <i class="fas fa-chevron-down dropdown-icon"></i>
+                        </a>
+                        <div class="collapse" id="servicosMenu">
+                            <ul class="nav flex-column ms-3">
+                                <li class="nav-item">
+                                    <a class="nav-link" href="{% url 'servicos:list' %}">
+                                        <i class="fas fa-list nav-icon"></i>
+                                        <span class="nav-text">Listar</span>
+                                    </a>
+                                </li>
+                                {% if user.is_master %}
+                                <li class="nav-item">
+                                    <a class="nav-link" href="{% url 'servicos:create' %}">
+                                        <i class="fas fa-plus nav-icon"></i>
+                                        <span class="nav-text">Novo Serviço</span>
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" href="{% url 'servicos:categorias' %}">
+                                        <i class="fas fa-tags nav-icon"></i>
+                                        <span class="nav-text">Categorias</span>
+                                    </a>
+                                </li>
+                                {% endif %}
+                            </ul>
+                        </div>
+                    </li>
+                    
+                    <!-- Relatórios -->
+                    {% if user.pode_ver_relatorios or user.is_master %}
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.resolver_match.namespace == 'relatorios' %}active{% endif %}" 
+                           href="{% url 'relatorios:dashboard' %}">
+                            <i class="fas fa-chart-bar nav-icon"></i>
+                            <span class="nav-text">Relatórios</span>
+                        </a>
+                    </li>
+                    {% endif %}
+                    
+                    <!-- Usuários -->
+                    {% if user.pode_cadastrar_funcionario or user.is_master %}
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.resolver_match.namespace == 'usuarios' and request.resolver_match.url_name != 'perfil' %}active{% endif %}" 
+                           href="{% url 'usuarios:list' %}">
+                            <i class="fas fa-user-cog nav-icon"></i>
+                            <span class="nav-text">Usuários</span>
+                        </a>
+                    </li>
+                    {% endif %}
+                    
+                    <!-- Configurações -->
+                    {% if user.pode_gerenciar_configuracoes or user.is_master %}
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.resolver_match.namespace == 'configuracoes' %}active{% endif %}" 
+                           href="{% url 'configuracoes:dashboard' %}">
+                            <i class="fas fa-cog nav-icon"></i>
+                            <span class="nav-text">Configurações</span>
+                        </a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </nav>
+            
+            <!-- Sidebar Footer -->
+            <div class="sidebar-footer">
+                <div class="user-info">
+                    <div class="user-avatar">
+                        {% if user.avatar %}
+                            <img src="{{ user.avatar.url }}" alt="{{ user.nome_display }}" class="rounded-circle">
+                        {% else %}
+                            <i class="fas fa-user-circle"></i>
+                        {% endif %}
+                    </div>
+                    <div class="user-details">
+                        <span class="user-name nav-text">{{ user.nome_display }}</span>
+                        <span class="user-role nav-text">{{ user.get_tipo_usuario_display }}</span>
+                    </div>
+                </div>
+                
+                <div class="user-actions">
+                    <a href="{% url 'usuarios:perfil' %}" class="btn btn-sm btn-outline-light" title="Perfil">
+                        <i class="fas fa-user nav-icon"></i>
+                        <span class="nav-text">Perfil</span>
+                    </a>
+                    <a href="{% url 'usuarios:logout' %}" class="btn btn-sm btn-outline-light" title="Sair">
+                        <i class="fas fa-sign-out-alt nav-icon"></i>
+                        <span class="nav-text">Sair</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Main Content -->
+        <main class="main-content" id="mainContent">
+            <!-- Top Bar -->
+            <div class="top-bar">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div class="d-flex align-items-center">
+                        <button class="btn btn-link sidebar-toggle d-md-none" id="sidebarToggle">
+                            <i class="fas fa-bars"></i>
+                        </button>
+                        <h1 class="page-title mb-0">{% block page_title %}JT Sistemas{% endblock %}</h1>
+                    </div>
+                    
+                    <div class="d-flex align-items-center">
+                        <!-- Notifications -->
+                        <div class="dropdown me-3">
+                            <button class="btn btn-outline-primary position-relative" type="button" data-bs-toggle="dropdown">
+                                <i class="fas fa-bell"></i>
+                                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                                    3
+                                </span>
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end">
+                                <li><h6 class="dropdown-header">Notificações</h6></li>
+                                <li><a class="dropdown-item" href="#">Novo agendamento</a></li>
+                                <li><a class="dropdown-item" href="#">Cliente cancelou</a></li>
+                                <li><a class="dropdown-item" href="#">Pagamento recebido</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item" href="#">Ver todas</a></li>
+                            </ul>
+                        </div>
+                        
+                        <!-- User Menu -->
+                        <div class="dropdown">
+                            <button class="btn btn-outline-primary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                                {% if user.avatar %}
+                                    <img src="{{ user.avatar.url }}" alt="{{ user.nome_display }}" class="rounded-circle me-2" width="24" height="24">
+                                {% else %}
+                                    <i class="fas fa-user-circle me-2"></i>
+                                {% endif %}
+                                {{ user.nome_display }}
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end">
+                                <li><a class="dropdown-item" href="{% url 'usuarios:perfil' %}"><i class="fas fa-user me-2"></i>Meu Perfil</a></li>
+                                <li><a class="dropdown-item" href="{% url 'usuarios:alterar_senha' %}"><i class="fas fa-key me-2"></i>Alterar Senha</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item" href="{% url 'usuarios:logout' %}"><i class="fas fa-sign-out-alt me-2"></i>Sair</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Page Content -->
+            <div class="page-content">
+                <!-- Messages -->
+                {% if messages %}
+                    <div class="messages-container">
+                        {% for message in messages %}
+                            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                                <i class="fas fa-{% if message.tags == 'error' %}exclamation-circle{% elif message.tags == 'warning' %}exclamation-triangle{% elif message.tags == 'success' %}check-circle{% else %}info-circle{% endif %} me-2"></i>
+                                {{ message }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+                
+                <!-- Breadcrumb -->
+                {% block breadcrumb %}
+                <nav aria-label="breadcrumb" class="mb-4">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item"><a href="{% url 'dashboard:home' %}">Dashboard</a></li>
+                        {% block breadcrumb_items %}{% endblock %}
+                    </ol>
+                </nav>
+                {% endblock %}
+                
+                <!-- Main Content -->
+                <div class="content-wrapper">
+                    {% block content %}{% endblock %}
+                </div>
+            </div>
+        </main>
+        
+        <!-- Overlay for mobile sidebar -->
+        <div class="sidebar-overlay" id="sidebarOverlay"></div>
+        
+    {% else %}
+        <!-- Login Page Layout -->
+        <div class="login-layout">
+            {% block login_content %}{% endblock %}
+        </div>
+    {% endif %}
+    
+    <!-- Bootstrap 5.3 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Chart.js for dashboard -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <!-- Custom JavaScript -->
+    <script src="{% load static %}{% static 'js/sidebar.js' %}"></script>
+    <script src="{% load static %}{% static 'js/main.js' %}"></script>
+    
+    {% block extra_js %}{% endblock %}
+    
+    <!-- Initialize components -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize sidebar if user is authenticated
+            {% if user.is_authenticated %}
+            if (typeof SidebarManager !== 'undefined') {
+                new SidebarManager();
+            }
+            {% endif %}
+            
+            // Auto-dismiss alerts after 5 seconds
+            setTimeout(function() {
+                const alerts = document.querySelectorAll('.alert');
+                alerts.forEach(alert => {
+                    const bsAlert = new bootstrap.Alert(alert);
+                    bsAlert.close();
+                });
+            }, 5000);
+        });
+    </script>
+</body>
+</html>

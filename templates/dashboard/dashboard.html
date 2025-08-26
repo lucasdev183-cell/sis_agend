@@ -1,0 +1,451 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Dashboard - JT Sistemas{% endblock %}
+{% block page_title %}Dashboard{% endblock %}
+
+{% block breadcrumb_items %}
+    <li class="breadcrumb-item active">Dashboard</li>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .stats-card {
+        background: white;
+        border-radius: 15px;
+        padding: 1.5rem;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+        border: 1px solid rgba(0, 0, 0, 0.05);
+        transition: all 0.3s ease;
+        height: 100%;
+    }
+    
+    .stats-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+    }
+    
+    .stats-icon {
+        width: 60px;
+        height: 60px;
+        border-radius: 15px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        color: white;
+        margin-bottom: 1rem;
+    }
+    
+    .stats-value {
+        font-size: 2rem;
+        font-weight: 700;
+        color: var(--gray-800);
+        margin: 0;
+    }
+    
+    .stats-label {
+        color: var(--gray-600);
+        font-size: 0.9rem;
+        margin: 0;
+    }
+    
+    .stats-change {
+        font-size: 0.85rem;
+        font-weight: 600;
+        margin-top: 0.5rem;
+    }
+    
+    .stats-change.positive {
+        color: var(--success-color);
+    }
+    
+    .stats-change.negative {
+        color: var(--danger-color);
+    }
+    
+    .chart-container {
+        background: white;
+        border-radius: 15px;
+        padding: 1.5rem;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+        border: 1px solid rgba(0, 0, 0, 0.05);
+        height: 400px;
+    }
+    
+    .activity-card {
+        background: white;
+        border-radius: 15px;
+        padding: 1.5rem;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+        border: 1px solid rgba(0, 0, 0, 0.05);
+        height: 100%;
+    }
+    
+    .activity-item {
+        display: flex;
+        align-items: center;
+        padding: 0.75rem 0;
+        border-bottom: 1px solid var(--gray-100);
+    }
+    
+    .activity-item:last-child {
+        border-bottom: none;
+    }
+    
+    .activity-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 1rem;
+        font-size: 0.9rem;
+    }
+    
+    .activity-content {
+        flex: 1;
+    }
+    
+    .activity-title {
+        font-weight: 600;
+        color: var(--gray-800);
+        margin: 0 0 0.25rem 0;
+        font-size: 0.9rem;
+    }
+    
+    .activity-subtitle {
+        color: var(--gray-600);
+        margin: 0;
+        font-size: 0.8rem;
+    }
+    
+    .activity-time {
+        color: var(--gray-500);
+        font-size: 0.8rem;
+    }
+    
+    .section-title {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: var(--gray-800);
+        margin-bottom: 1.5rem;
+    }
+    
+    .quick-action {
+        background: white;
+        border: 2px solid var(--gray-200);
+        border-radius: 15px;
+        padding: 1.5rem;
+        text-align: center;
+        text-decoration: none;
+        color: var(--gray-700);
+        transition: all 0.3s ease;
+        display: block;
+    }
+    
+    .quick-action:hover {
+        border-color: var(--primary-color);
+        color: var(--primary-color);
+        transform: translateY(-3px);
+        box-shadow: 0 10px 25px rgba(37, 99, 235, 0.15);
+    }
+    
+    .quick-action i {
+        font-size: 2rem;
+        margin-bottom: 1rem;
+    }
+    
+    .quick-action-title {
+        font-weight: 600;
+        margin: 0;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Statistics Cards -->
+<div class="row g-4 mb-4">
+    <div class="col-xl-3 col-md-6">
+        <div class="stats-card">
+            <div class="stats-icon" style="background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));">
+                <i class="fas fa-users"></i>
+            </div>
+            <h3 class="stats-value">{{ total_usuarios }}</h3>
+            <p class="stats-label">Usuários Ativos</p>
+            {% if agendamentos_growth > 0 %}
+                <div class="stats-change positive">
+                    <i class="fas fa-arrow-up me-1"></i>+{{ agendamentos_growth }}% este mês
+                </div>
+            {% elif agendamentos_growth < 0 %}
+                <div class="stats-change negative">
+                    <i class="fas fa-arrow-down me-1"></i>{{ agendamentos_growth }}% este mês
+                </div>
+            {% endif %}
+        </div>
+    </div>
+    
+    <div class="col-xl-3 col-md-6">
+        <div class="stats-card">
+            <div class="stats-icon" style="background: linear-gradient(135deg, var(--success-color), var(--success-light));">
+                <i class="fas fa-user-tie"></i>
+            </div>
+            <h3 class="stats-value">{{ total_funcionarios }}</h3>
+            <p class="stats-label">Funcionários</p>
+        </div>
+    </div>
+    
+    <div class="col-xl-3 col-md-6">
+        <div class="stats-card">
+            <div class="stats-icon" style="background: linear-gradient(135deg, var(--info-color), #06b6d4);">
+                <i class="fas fa-calendar-check"></i>
+            </div>
+            <h3 class="stats-value">{{ agendamentos_hoje }}</h3>
+            <p class="stats-label">Agendamentos Hoje</p>
+            <div class="stats-change">
+                <small class="text-muted">{{ agendamentos_pendentes }} pendentes</small>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-xl-3 col-md-6">
+        <div class="stats-card">
+            <div class="stats-icon" style="background: linear-gradient(135deg, var(--warning-color), #f59e0b);">
+                <i class="fas fa-dollar-sign"></i>
+            </div>
+            <h3 class="stats-value">R$ {{ receita_mes|floatformat:2 }}</h3>
+            <p class="stats-label">Receita do Mês</p>
+            {% if receita_growth > 0 %}
+                <div class="stats-change positive">
+                    <i class="fas fa-arrow-up me-1"></i>+{{ receita_growth }}% vs mês anterior
+                </div>
+            {% elif receita_growth < 0 %}
+                <div class="stats-change negative">
+                    <i class="fas fa-arrow-down me-1"></i>{{ receita_growth }}% vs mês anterior
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Charts Row -->
+<div class="row g-4 mb-4">
+    <div class="col-xl-8">
+        <div class="chart-container">
+            <h5 class="section-title">Receita Mensal</h5>
+            <canvas id="revenueChart"></canvas>
+        </div>
+    </div>
+    
+    <div class="col-xl-4">
+        <div class="chart-container">
+            <h5 class="section-title">Status dos Agendamentos</h5>
+            <canvas id="statusChart"></canvas>
+        </div>
+    </div>
+</div>
+
+<!-- Activity and Quick Actions -->
+<div class="row g-4">
+    <div class="col-xl-8">
+        <div class="activity-card">
+            <h5 class="section-title">Agendamentos de Hoje</h5>
+            
+            {% if agendamentos_hoje_list %}
+                {% for agendamento in agendamentos_hoje_list %}
+                    <div class="activity-item">
+                        <div class="activity-icon" style="background: {% if agendamento.status == 'concluido' %}var(--success-color){% elif agendamento.status == 'cancelado' %}var(--danger-color){% elif agendamento.status == 'em_andamento' %}var(--warning-color){% else %}var(--info-color){% endif %}; color: white;">
+                            <i class="fas fa-{% if agendamento.status == 'concluido' %}check{% elif agendamento.status == 'cancelado' %}times{% elif agendamento.status == 'em_andamento' %}clock{% else %}calendar{% endif %}"></i>
+                        </div>
+                        <div class="activity-content">
+                            <h6 class="activity-title">{{ agendamento.cliente.nome }}</h6>
+                            <p class="activity-subtitle">{{ agendamento.servico.nome }} - {{ agendamento.funcionario.nome }}</p>
+                        </div>
+                        <div class="activity-time">
+                            {{ agendamento.data_hora|time:"H:i" }}
+                        </div>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <div class="text-center text-muted py-4">
+                    <i class="fas fa-calendar-times fa-3x mb-3"></i>
+                    <p>Nenhum agendamento para hoje</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+    
+    <div class="col-xl-4">
+        <div class="activity-card">
+            <h5 class="section-title">Ações Rápidas</h5>
+            
+            <div class="row g-3">
+                {% if user.pode_agendar or user.is_master %}
+                <div class="col-6">
+                    <a href="{% url 'agendamentos:create' %}" class="quick-action">
+                        <i class="fas fa-plus"></i>
+                        <h6 class="quick-action-title">Novo Agendamento</h6>
+                    </a>
+                </div>
+                {% endif %}
+                
+                {% if user.pode_cadastrar_cliente or user.is_master %}
+                <div class="col-6">
+                    <a href="{% url 'clientes:create' %}" class="quick-action">
+                        <i class="fas fa-user-plus"></i>
+                        <h6 class="quick-action-title">Novo Cliente</h6>
+                    </a>
+                </div>
+                {% endif %}
+                
+                <div class="col-6">
+                    <a href="{% url 'dashboard:calendar' %}" class="quick-action">
+                        <i class="fas fa-calendar-alt"></i>
+                        <h6 class="quick-action-title">Calendário</h6>
+                    </a>
+                </div>
+                
+                {% if user.pode_ver_relatorios or user.is_master %}
+                <div class="col-6">
+                    <a href="{% url 'dashboard:reports' %}" class="quick-action">
+                        <i class="fas fa-chart-bar"></i>
+                        <h6 class="quick-action-title">Relatórios</h6>
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+            
+            <!-- Performance Metrics -->
+            <div class="mt-4">
+                <h6 class="section-title">Métricas</h6>
+                
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span class="text-muted">Avaliação Média</span>
+                    <div class="d-flex align-items-center">
+                        <span class="fw-bold me-2">{{ avg_rating|floatformat:1 }}</span>
+                        {% for i in "12345" %}
+                            <i class="fas fa-star {% if forloop.counter <= avg_rating %}text-warning{% else %}text-muted{% endif %}"></i>
+                        {% endfor %}
+                    </div>
+                </div>
+                
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span class="text-muted">Taxa de Cancelamento</span>
+                    <span class="fw-bold {% if cancellation_rate > 10 %}text-danger{% elif cancellation_rate > 5 %}text-warning{% else %}text-success{% endif %}">
+                        {{ cancellation_rate|floatformat:1 }}%
+                    </span>
+                </div>
+                
+                <div class="d-flex justify-content-between align-items-center">
+                    <span class="text-muted">Receita Hoje</span>
+                    <span class="fw-bold text-success">R$ {{ receita_hoje|floatformat:2 }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Revenue Chart
+    const revenueCtx = document.getElementById('revenueChart').getContext('2d');
+    const revenueData = {{ monthly_revenue_data|safe }};
+    
+    new Chart(revenueCtx, {
+        type: 'line',
+        data: {
+            labels: revenueData.map(item => item.month),
+            datasets: [{
+                label: 'Receita (R$)',
+                data: revenueData.map(item => item.revenue),
+                borderColor: 'var(--primary-color)',
+                backgroundColor: 'rgba(37, 99, 235, 0.1)',
+                borderWidth: 3,
+                fill: true,
+                tension: 0.4,
+                pointBackgroundColor: 'var(--primary-color)',
+                pointBorderColor: '#fff',
+                pointBorderWidth: 2,
+                pointRadius: 6,
+                pointHoverRadius: 8
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: false
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        callback: function(value) {
+                            return 'R$ ' + value.toLocaleString('pt-BR');
+                        }
+                    }
+                }
+            },
+            elements: {
+                point: {
+                    hoverBackgroundColor: 'var(--primary-color)'
+                }
+            }
+        }
+    });
+    
+    // Status Chart
+    const statusCtx = document.getElementById('statusChart').getContext('2d');
+    const statusData = {{ agendamentos_status_data|safe }};
+    
+    const statusColors = {
+        'agendado': '#007bff',
+        'confirmado': '#17a2b8',
+        'em_andamento': '#ffc107',
+        'concluido': '#28a745',
+        'cancelado': '#dc3545',
+        'nao_compareceu': '#6c757d',
+        'reagendado': '#17a2b8'
+    };
+    
+    new Chart(statusCtx, {
+        type: 'doughnut',
+        data: {
+            labels: statusData.map(item => {
+                const statusMap = {
+                    'agendado': 'Agendado',
+                    'confirmado': 'Confirmado',
+                    'em_andamento': 'Em Andamento',
+                    'concluido': 'Concluído',
+                    'cancelado': 'Cancelado',
+                    'nao_compareceu': 'Não Compareceu',
+                    'reagendado': 'Reagendado'
+                };
+                return statusMap[item.status] || item.status;
+            }),
+            datasets: [{
+                data: statusData.map(item => item.count),
+                backgroundColor: statusData.map(item => statusColors[item.status] || '#6c757d'),
+                borderWidth: 0
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: {
+                        padding: 20,
+                        usePointStyle: true
+                    }
+                }
+            }
+        }
+    });
+</script>
+{% endblock %}
